@@ -28,9 +28,9 @@ def asegurar_id():
 async def enviar(context, texto):
     await context.bot.send_message(chat_id=MICHAEL_ID, text=texto)
 
-async def tarea_1(context): await enviar(context, "⏰ Mensaje 1 - 14:50")
-async def tarea_2(context): await enviar(context, "⏰ Mensaje 2 - 14:55")
-async def tarea_3(context): await enviar(context, "⏰ Mensaje 3 - 15:00")
+async def tarea_1(context): await enviar(context, "🔔 Mensaje 1 - 14:50")
+async def tarea_2(context): await enviar(context, "🔔 Mensaje 2 - 14:55")
+async def tarea_3(context): await enviar(context, "🔔 Mensaje 3 - 15:00")
 
 def main():
     asegurar_id()
@@ -45,7 +45,7 @@ def main():
     app.job_queue.run_once(tarea_1, when=h1)
     app.job_queue.run_once(tarea_2, when=h2)
     app.job_queue.run_once(tarea_3, when=h3)
-    print(f"Bot iniciado. Mensajes a las 14:50, 14:55, 15:00 (hora Chile)")
+    print("Bot iniciado. Mensajes a las 14:50, 14:55, 15:00 (hora Chile)")
     app.run_polling()
 
 if __name__ == "__main__":
