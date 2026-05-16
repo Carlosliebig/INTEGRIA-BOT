@@ -4,9 +4,11 @@ from datetime import datetime
 from telegram.ext import Application
 from supabase import create_client, Client
 
+# ==================== VARIABLES DE ENTORNO ====================
 TOKEN = os.environ["TELEGRAM_TOKEN"]
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"]
+# ==============================================================
 
 MICHAEL_ID = 7227976840
 MICHAEL_EMAIL = "michaelespinoza.arenas@gmail.com"
@@ -28,9 +30,9 @@ def asegurar_id():
 async def enviar(context, texto):
     await context.bot.send_message(chat_id=MICHAEL_ID, text=texto)
 
-async def tarea_1(context): await enviar(context, "🔔 Mensaje 1 - 14:50")
-async def tarea_2(context): await enviar(context, "🔔 Mensaje 2 - 14:55")
-async def tarea_3(context): await enviar(context, "🔔 Mensaje 3 - 15:00")
+async def tarea_1(context): await enviar(context, "🔔 Prueba 1 - 15:15")
+async def tarea_2(context): await enviar(context, "🔔 Prueba 2 - 15:20")
+async def tarea_3(context): await enviar(context, "🔔 Prueba 3 - 15:25")
 
 def main():
     asegurar_id()
@@ -39,13 +41,13 @@ def main():
         raise RuntimeError("JobQueue no disponible. Instala python-telegram-bot[job-queue]")
     chile = pytz.timezone("America/Santiago")
     hoy = datetime.now(chile).date()
-    h1 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 14, 50, 0))
-    h2 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 14, 55, 0))
-    h3 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 15, 0, 0))
+    h1 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 15, 15, 0))
+    h2 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 15, 20, 0))
+    h3 = chile.localize(datetime(hoy.year, hoy.month, hoy.day, 15, 25, 0))
     app.job_queue.run_once(tarea_1, when=h1)
     app.job_queue.run_once(tarea_2, when=h2)
     app.job_queue.run_once(tarea_3, when=h3)
-    print("Bot iniciado. Mensajes a las 14:50, 14:55, 15:00 (hora Chile)")
+    print(f"Bot iniciado. Mensajes a las 15:15, 15:20, 15:25 (hora Chile)")
     app.run_polling()
 
 if __name__ == "__main__":
