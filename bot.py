@@ -5,11 +5,14 @@ from datetime import datetime
 from telegram import Bot
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-TOKEN = os.environ["TELEGRAM_TOKEN"]
-MICHAEL_ID = 7227976840
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+if not TOKEN:
+    raise RuntimeError("TELEGRAM_TOKEN no configurado")
 
+MICHAEL_ID = 7227976840
 bot = Bot(token=TOKEN)
 
+# Servidor HTTP para Railway
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -23,27 +26,56 @@ def start_server():
 
 async def main():
     chile = pytz.timezone("America/Santiago")
-    # Prueba hoy: 12:00, 12:05, 12:10
-    objetivos = [
-        (12, 0, "🔔 PRUEBA 1 - 12:00: Recordatorio de wellness (solo prueba)"),
-        (12, 5, "🔔 PRUEBA 2 - 12:05: Plan nutricional de prueba"),
-        (12, 10, "🔔 PRUEBA 3 - 12:10: Recordatorio nocturno de prueba (para validar)")
-    ]
-    enviados = [False, False, False]
-
-    print("Bot iniciado en modo PRUEBA. Esperando horas: 12:00, 12:05, 12:10...")
-    while not all(enviados):
+    # Control de envíos diarios
+    ultimo_envio = {
+        "wellness": None,
+        "nutricion": None,
+        "noche": None,
+        "prueba1": None,
+        "prueba2": None,
+        "prueba3": None
+    }
+    print("Bot iniciado. Esperando horarios...")
+    while True:
         ahora = datetime.now(chile)
-        for i, (h, m, txt) in enumerate(objetivos):
-            if not enviados[i] and ahora.hour == h and ahora.minute == m and ahora.second == 0:
-                await bot.send_message(chat_id=MICHAEL_ID, text=txt)
-                enviados[i] = True
-                print(f"Mensaje enviado a las {h:02d}:{m:02d}")
-        await asyncio.sleep(30)
+        hoy = ahora.date()
+        hora_min = (ahora.hour, ahora.minute)
 
-    print("Prueba completada. El bot se detendrá ahora (puedes reiniciarlo con nuevo código).")
+        # PRUEBAS HOY (12:00, 12:05, 12:10) - solo si hoy es 2026-05-17
+        if hoy == datetime(2026, 5, 17).date():
+            if hora_min == (12, 0) and ultimo_envio["prueba1"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 1 - 12:00: Recordatorio de wellness")
+                ultimo_envio["prueba1"] = hoy
+                print("Prueba 1 enviada")
+            if hora_min == (12, 5) and ultimo_envio["prueba2"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 2 - 12:05: Plan nutricional de prueba")
+                ultimo_envio["prueba2"] = hoy
+                print("Prueba 2 enviada")
+            if hora_min == (12, 10) and ultimo_envio["prueba3"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 3 - 12:10: Recordatorio nocturno de prueba")
+                ultimo_envio["prueba3"] = hoy
+                print("Prueba 3 enviada")
+
+        # HORARIOS NORMALES (todos los días)
+        if hora_min == (8, 0) and ultimo_envio["wellness"] != hoy:
+            await bot.send_message(chat_id=MICHAEL_ID, text="🌞 ¡Buenos días! No olvides responder la encuesta de wellness.")
+            ultimo_envio["wellness"] = hoy
+            print("Wellness enviado")
+        if hora_min == (12, 0) and ultimo_envio["nutricion"] != hoy:
+            await bot.send_message(chat_id=MICHAEL_ID, text="🍽️ Plan nutricional de Michael: 200g proteína, 2 tazas verduras, sin carbohidratos en la cena.")
+            ultimo_envio["nutricion"] = hoy
+            print("Plan nutricional enviado")
+        if hora_min == (20, 0) and ultimo_envio["noche"] != hoy:
+            await bot.send_message(chat_id=MICHAEL_ID, text="🌙 Es hora de descansar. Apaga pantallas, relájate y duerme bien.")
+            ultimo_envio["noche"] = hoy
+            print("Recordatorio nocturno enviado")
+
+        await asyncio.sleep(30)
 
 if __name__ == "__main__":
     import threading
     threading.Thread(target=start_server, daemon=True).start()
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot detenido manualmente")
