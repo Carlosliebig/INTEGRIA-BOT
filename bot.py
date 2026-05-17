@@ -1,4 +1,6 @@
 import os, logging, sys, asyncio
+import nest_asyncio
+nest_asyncio.apply()
 from datetime import time
 import pytz
 from telegram import Update
