@@ -10,40 +10,40 @@ MICHAEL_ID = 7227976840
 
 bot = Bot(token=TOKEN)
 
-# Servidor HTTP dummy para que Render mantenga el servicio activo
-class DummyHandler(BaseHTTPRequestHandler):
+class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Bot is running")
+        self.wfile.write(b"Bot activo")
 
-def run_http_server():
-    port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), DummyHandler)
+def start_server():
+    port = int(os.environ.get("PORT", 8000))
+    server = HTTPServer(("0.0.0.0", port), Handler)
     server.serve_forever()
-
-async def enviar_mensaje(texto):
-    await bot.send_message(chat_id=MICHAEL_ID, text=texto)
 
 async def main():
     chile = pytz.timezone("America/Santiago")
-    # Horas para hoy: 16:00, 16:05, 16:10
-    objetivos = [(16, 0, "🔔 Prueba 1 - 16:00"),
-                 (16, 5, "🔔 Prueba 2 - 16:05"),
-                 (16, 10, "🔔 Prueba 3 - 16:10")]
+    # Prueba hoy: 12:00, 12:05, 12:10
+    objetivos = [
+        (12, 0, "🔔 PRUEBA 1 - 12:00: Recordatorio de wellness (solo prueba)"),
+        (12, 5, "🔔 PRUEBA 2 - 12:05: Plan nutricional de prueba"),
+        (12, 10, "🔔 PRUEBA 3 - 12:10: Recordatorio nocturno de prueba (para validar)")
+    ]
     enviados = [False, False, False]
 
-    print("Bot iniciado. Esperando horas...")
+    print("Bot iniciado en modo PRUEBA. Esperando horas: 12:00, 12:05, 12:10...")
     while not all(enviados):
         ahora = datetime.now(chile)
         for i, (h, m, txt) in enumerate(objetivos):
             if not enviados[i] and ahora.hour == h and ahora.minute == m and ahora.second == 0:
-                await enviar_mensaje(txt)
+                await bot.send_message(chat_id=MICHAEL_ID, text=txt)
                 enviados[i] = True
                 print(f"Mensaje enviado a las {h:02d}:{m:02d}")
         await asyncio.sleep(30)
 
+    print("Prueba completada. El bot se detendrá ahora (puedes reiniciarlo con nuevo código).")
+
 if __name__ == "__main__":
     import threading
-    threading.Thread(target=run_http_server, daemon=True).start()
+    threading.Thread(target=start_server, daemon=True).start()
     asyncio.run(main())
