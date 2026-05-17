@@ -1,8 +1,7 @@
-import os
-import logging
+import os, logging, sys
 from datetime import time
 import pytz
-from telegram import Update, Bot
+from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
@@ -12,9 +11,9 @@ TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 TIMEZONE = pytz.timezone("America/Santiago")
 ARQUEROS = {"Michael": os.environ.get("CHAT_ID_MICHAEL", "7227976840")}
 
-MSG_8AM = "Buenos dias {nombre}!\n\nCompleta tu Encuesta Wellness en INTEGRIA antes de la sesion de hoy.\n\nEvalua: sueno, energia, fatiga muscular, estado emocional y dolor.\n\nPreparador arqueros Everton Vina del Mar"
-MSG_12PM = "Hola {nombre}!\n\nRecuerda tu almuerzo y plan nutricional:\n- Proteina de calidad\n- Carbohidratos\n- Verduras\n- Hidratacion\n\nSi puedes, descansa 20-30 min.\n\nINTEGRIA Everton"
-MSG_8PM = "Buenas noches {nombre}!\n\nProtocolo de descanso:\n- Sin pantallas desde las 22:00\n- Cuarto oscuro y fresco\n- Dormir 8-9 horas\n\nEl sueno es tu mejor recuperacion.\n\nINTEGRIA Everton"
+MSG_8AM = "Buenos dias {nombre}!\n\nCompleta tu Encuesta Wellness en INTEGRIA antes de la sesion de hoy.\n\nEvalua sueno, energia, fatiga y estado emocional.\n\nINTEGRIA - Everton Vina del Mar"
+MSG_12PM = "Hola {nombre}!\n\nRecuerda tu almuerzo:\n- Proteina de calidad\n- Carbohidratos\n- Verduras\n- Hidratacion\n\nDescansa 20-30 min si puedes.\n\nINTEGRIA - Everton"
+MSG_8PM = "Buenas noches {nombre}!\n\nProtocolo de descanso:\n- Sin pantallas desde las 22:00\n- Cuarto oscuro y fresco\n- Dormir 8-9 horas\n\nINTEGRIA - Everton"
 
 async def enviar(bot, template, tag):
     for nombre, chat_id in ARQUEROS.items():
@@ -32,11 +31,10 @@ async def job_8pm(ctx): await enviar(ctx.bot, MSG_8PM, "8PM")
 async def start(update: Update, ctx):
     cid = update.effective_chat.id
     nombre = update.effective_user.first_name
-    await update.message.reply_text(f"INTEGRIA Bot activo!\nHola {nombre}, tu Chat ID es: {cid}")
-    logger.info(f"Start {nombre} {cid}")
+    await update.message.reply_text(f"INTEGRIA Bot activo! Hola {nombre}, tu Chat ID es: {cid}")
 
 async def test(update: Update, ctx):
-    await update.message.reply_text("INTEGRIA Bot funcionando OK.\n8AM Wellness\n12PM Nutricion\n8PM Descanso")
+    await update.message.reply_text("INTEGRIA Bot funcionando OK.")
 
 async def enviar_ahora(update: Update, ctx):
     await update.message.reply_text("Enviando prueba...")
@@ -46,19 +44,18 @@ async def enviar_ahora(update: Update, ctx):
     await update.message.reply_text("Listo!")
 
 def main():
-    logger.info(f"TOKEN presente: {bool(TOKEN)}")
+    logger.info(f"Iniciando - TOKEN presente: {bool(TOKEN)}")
     if not TOKEN:
-        logger.error("SIN TOKEN - revisa variables Railway")
-        import sys; sys.exit(1)
+        logger.error("ERROR: sin TELEGRAM_TOKEN")
+        sys.exit(1)
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("test", test))
     app.add_handler(CommandHandler("enviar_ahora", enviar_ahora))
-    jq = app.job_queue
-    jq.run_daily(job_8am,  time=time(8,  0, tzinfo=TIMEZONE))
-    jq.run_daily(job_12pm, time=time(12, 0, tzinfo=TIMEZONE))
-    jq.run_daily(job_8pm,  time=time(20, 0, tzinfo=TIMEZONE))
-    logger.info("Bot iniciado OK")
+    app.job_queue.run_daily(job_8am,  time=time(8,  0, tzinfo=TIMEZONE))
+    app.job_queue.run_daily(job_12pm, time=time(12, 0, tzinfo=TIMEZONE))
+    app.job_queue.run_daily(job_8pm,  time=time(20, 0, tzinfo=TIMEZONE))
+    logger.info("Bot corriendo!")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
