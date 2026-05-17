@@ -5,6 +5,7 @@ from datetime import datetime
 from telegram import Bot
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
+# Token correcto (obtenido de BotFather)
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 if not TOKEN:
     raise RuntimeError("TELEGRAM_TOKEN no configurado")
@@ -12,6 +13,7 @@ if not TOKEN:
 MICHAEL_ID = 7227976840
 bot = Bot(token=TOKEN)
 
+# Servidor HTTP para mantener Railway activo
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -26,8 +28,12 @@ def start_server():
 async def main():
     chile = pytz.timezone("America/Santiago")
     ultimo_envio = {
-        "wellness": None, "nutricion": None, "noche": None,
-        "prueba1": None, "prueba2": None, "prueba3": None
+        "wellness": None,
+        "nutricion": None,
+        "noche": None,
+        "prueba1": None,
+        "prueba2": None,
+        "prueba3": None
     }
     print("Bot iniciado. Esperando horarios...")
     while True:
@@ -35,22 +41,22 @@ async def main():
         hoy = ahora.date()
         hora_min = (ahora.hour, ahora.minute)
 
-        # Pruebas hoy 17 de mayo (12:15, 12:20, 12:25)
+        # PRUEBAS HOY (12:30, 12:35, 12:40) - solo 17 de mayo
         if hoy == datetime(2026, 5, 17).date():
-            if hora_min == (12, 15) and ultimo_envio["prueba1"] != hoy:
-                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 1 - 12:15")
+            if hora_min == (12, 30) and ultimo_envio["prueba1"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 1 - 12:30")
                 ultimo_envio["prueba1"] = hoy
                 print("Prueba 1 enviada")
-            if hora_min == (12, 20) and ultimo_envio["prueba2"] != hoy:
-                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 2 - 12:20")
+            if hora_min == (12, 35) and ultimo_envio["prueba2"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 2 - 12:35")
                 ultimo_envio["prueba2"] = hoy
                 print("Prueba 2 enviada")
-            if hora_min == (12, 25) and ultimo_envio["prueba3"] != hoy:
-                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 3 - 12:25")
+            if hora_min == (12, 40) and ultimo_envio["prueba3"] != hoy:
+                await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 3 - 12:40")
                 ultimo_envio["prueba3"] = hoy
                 print("Prueba 3 enviada")
 
-        # Horarios regulares diarios
+        # HORARIOS REGULARES (todos los días)
         if hora_min == (8, 0) and ultimo_envio["wellness"] != hoy:
             await bot.send_message(chat_id=MICHAEL_ID, text="🌞 ¡Buenos días! No olvides responder la encuesta de wellness.")
             ultimo_envio["wellness"] = hoy
@@ -69,4 +75,7 @@ async def main():
 if __name__ == "__main__":
     import threading
     threading.Thread(target=start_server, daemon=True).start()
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Bot detenido manualmente")
