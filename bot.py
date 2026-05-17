@@ -35,7 +35,7 @@ async def main():
             hoy = ahora.date()
             hora_min = (ahora.hour, ahora.minute)
 
-            # Pruebas hoy (12:30, 12:35, 12:40)
+            # Pruebas hoy 17 de mayo (12:30, 12:35, 12:40) - ya pasaron, pero las dejamos por si acaso
             if hoy == datetime(2026, 5, 17).date():
                 if hora_min == (12, 30) and ultimo_envio["prueba1"] != hoy:
                     await enviar_mensaje("🔔 PRUEBA 1 - 12:30")
@@ -47,7 +47,7 @@ async def main():
                     await enviar_mensaje("🔔 PRUEBA 3 - 12:40")
                     ultimo_envio["prueba3"] = hoy
 
-            # Horarios regulares
+            # Horarios regulares (todos los días)
             if hora_min == (8, 0) and ultimo_envio["wellness"] != hoy:
                 await enviar_mensaje("🌞 ¡Buenos días! No olvides responder la encuesta de wellness.")
                 ultimo_envio["wellness"] = hoy
@@ -64,4 +64,11 @@ async def main():
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Bucle infinito que reinicia el main si por alguna razón termina
+    while True:
+        try:
+            asyncio.run(main())
+        except Exception as e:
+            print(f"Error fatal, reiniciando en 10s: {e}")
+            import time
+            time.sleep(10)
