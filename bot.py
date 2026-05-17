@@ -26,12 +26,8 @@ def start_server():
 async def main():
     chile = pytz.timezone("America/Santiago")
     ultimo_envio = {
-        "wellness": None,
-        "nutricion": None,
-        "noche": None,
-        "prueba1": None,
-        "prueba2": None,
-        "prueba3": None
+        "wellness": None, "nutricion": None, "noche": None,
+        "prueba1": None, "prueba2": None, "prueba3": None
     }
     print("Bot iniciado. Esperando horarios...")
     while True:
@@ -39,7 +35,7 @@ async def main():
         hoy = ahora.date()
         hora_min = (ahora.hour, ahora.minute)
 
-        # PRUEBAS HOY (12:15, 12:20, 12:25) - solo hoy 2026-05-17
+        # Pruebas hoy 17 de mayo (12:15, 12:20, 12:25)
         if hoy == datetime(2026, 5, 17).date():
             if hora_min == (12, 15) and ultimo_envio["prueba1"] != hoy:
                 await bot.send_message(chat_id=MICHAEL_ID, text="🔔 PRUEBA 1 - 12:15")
@@ -54,7 +50,7 @@ async def main():
                 ultimo_envio["prueba3"] = hoy
                 print("Prueba 3 enviada")
 
-        # HORARIOS NORMALES (todos los días)
+        # Horarios regulares diarios
         if hora_min == (8, 0) and ultimo_envio["wellness"] != hoy:
             await bot.send_message(chat_id=MICHAEL_ID, text="🌞 ¡Buenos días! No olvides responder la encuesta de wellness.")
             ultimo_envio["wellness"] = hoy
@@ -73,7 +69,4 @@ async def main():
 if __name__ == "__main__":
     import threading
     threading.Thread(target=start_server, daemon=True).start()
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Bot detenido manualmente")
+    asyncio.run(main())
