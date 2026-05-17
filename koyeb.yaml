@@ -1,0 +1,22 @@
+# koyeb.yaml
+name: integria-bot
+services:
+  - name: integria-bot
+    type: worker
+    git:
+      repository: github.com/Carlosliebig/INTEGRIA-BOT
+      branch: main
+    build:
+      builder: buildpack
+      build_command: pip install -r requirements.txt
+    run:
+      run_command: python bot.py
+    env:
+      - key: TELEGRAM_TOKEN
+        value: "8630249670:AAHq2GfELz1Bgl1EoJOBMwu6TBKJaNPuV80"
+      - key: CHAT_ID_MICHAEL
+        value: "7227976840"
+    instance_types:
+      - type: nano
+    regions:
+      - fra
